@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Render One Page of PDF</title>
+<style>
+  body { font-family: Arial, sans-serif; }
+  #pdf-canvas { border: 1px solid #ccc; }
+</style>
+</head>
+<body>
+    <script src="./build/pdf.mjs" type="module"></script>
+    <script type="module" src="./build/pdf.worker.mjs"></script>
+    <!-- <script src="//mozilla.github.io/pdf.js/build/pdf.mjs" type="module"></script> -->
+
+
+
+<h1>Random Sraith Pictiúr Generator</h1>
+
+<input type="text" id="sraithInput" placeholder="Sraith Number" style="display: inline-block;">
+<button id="sraithSubmit" style="display: inline-block;">Submit</button>
+<button id="clearList">Reset</button>
+
+
+<button onclick="renderPDF()" id="randomise" style="display: block">Randomise</button>
+
+
+<canvas style="border: 1px solid black" id="the-canvas"></canvas>
+
+<script>
+const sraithNumbers = []
+  const btnSubmit = document.getElementById('sraithSubmit')
+  const inputEl = document.getElementById('sraithInput')
+  const btnClear = document.getElementById('clearList')
+
+  btnSubmit.addEventListener('click', () => {
+    const inputValue = inputEl.value
+    inputEl.value =''
+    const splitSraith = inputValue.split(" ")
+    for (let sraithNum of splitSraith) {
+      sraithNumbers.push(parseInt(sraithNum))
+    }
+  })
+
+  btnClear.addEventListener('click', () => {
+    while (sraithNumbers.length > 0) {
+      sraithNumbers.pop()
+    }
+  })
+</script>
+
+<script type="module">
+  var url = './EN-1011-72060786.pdf';
+
+  var { pdfjsLib } = globalThis;
+
+  pdfjsLib.GlobalWorkerOptions.workerSrc = './build/pdf.worker.mjs';
+
+  const renderPDF = function () {
+  
+  var loadingTask = pdfjsLib.getDocument({ url });
+  loadingTask.promise.then(function(pdf) {
+    console.log('PDF loaded');
+
+
+    let num = 1
+const randomise = function () {
+  if (isNaN(sraithNumbers[0])) {
+    num = 0
+    console.log(num)
+  } else {
+  const arrayLength = sraithNumbers.length
+  
+    num = Math.floor(Math.random()*arrayLength)+1
+
+    
+    if (num === 0) {
+        randomise()
+        return;
+    } else {
+    console.log(num)
+    return(num)
+    }
+    console.log(num)
+}}
+
+randomise()
+    let sraithPage =(isNaN(sraithNumbers[0]) || sraithNumbers.length === 0) ? 1 : sraithNumbers[num];
+    if (!sraithPage) {
+      sraithPage = sraithNumbers.at(-1)+1
+    }
+    var pageNumber = sraithPage
+    console.log(sraithPage)
+    pdf.getPage(pageNumber).then(function(page) {
+      console.log('Page loaded');
+
+      var scale = 1.5;
+      var viewport = page.getViewport({scale: scale});
+
+      // Prepare canvas using PDF page dimensions
+      var canvas = document.getElementById('the-canvas');
+      var context = canvas.getContext('2d');
+      canvas.height = viewport.height;
+      canvas.width = viewport.width;
+
+      // Render PDF page into canvas context
+      var renderContext = {
+        canvasContext: context,
+        viewport: viewport
+      };
+      var renderTask = page.render(renderContext);
+      renderTask.promise.then(function () {
+        console.log('Page rendered');
+      });
+    });
+  }, function (reason) {
+    // PDF loading error
+    console.error(reason);
+  });
+  }
+  renderPDF()
+  window.renderPDF = renderPDF
+</script>
+
+</body>
+</html>
